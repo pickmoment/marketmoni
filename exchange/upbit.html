@@ -17,7 +17,14 @@
   </head>
   <body>
     <div id="app">
-      <div>{{updateTime | formatDate}}</div>
+      
+      <div class="row">
+        <div class="col s6 m4 l2">
+          <input type="text" id="coin-input" @keyup="filterCoin">
+        </div>
+        <div class="col s4 offset-s8 right-align" id="update-time">{{updateTime | formatDate}}</span>
+        
+      </div>
       <div class="row">
         <coin-view 
           v-for="coin in coinList"
@@ -26,6 +33,7 @@
         </coin-view>
       </div>
     </div>
+    
 
     <!--Import jQuery before materialize.js-->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>

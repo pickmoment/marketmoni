@@ -13,6 +13,10 @@
   margin-bottom: 5px;
 }
 
+.card .card-content .card-title .card-title-desc {
+  font-size: 10px;
+}
+
 .card-title-info {
   font-size: 10px;
   font-weight: normal;
@@ -34,4 +38,13 @@
 .row .col .index {
   padding: .20rem .25rem;
   line-height: 1.0;
+}
+
+#coin-input {
+  margin: 0;
+}
+
+#update-time {
+  font-size: 10px;
+  color: gray;  
 }

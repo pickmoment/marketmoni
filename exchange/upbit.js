@@ -20,7 +20,7 @@ Vue.component('coin-view', {
       <div class="card">
         <div class="card-content">
           <span class="card-title" v-bind:title="coin.name">
-            {{coin.symbol}}
+            {{coin.symbol}} <span class="card-title-desc">{{coin.name}}</span>
           </span>
           <div class="row">
             <index-view title="현재가" v-bind:index="coin.price" unit="원" wide="s6"/>
@@ -30,8 +30,11 @@ Vue.component('coin-view', {
             <index-view title="거래량" v-bind:index="coin.amount" unit="개" wide="s6"/>
             <index-view title="거래금액" v-bind:index="coin.volume" unit="원" wide="s6"/>
             <index-view title="구매강도" v-bind:index="coin.bid_power" unit="배" wide="s6"/>
-            </div>
+          </div>
         </div>            
+        <div class="card-action">
+          <a v-bind:href="coin.coinmarketcap_link" target="_blank">Global</a>
+        </div>
       </div>
     </div>  
   `        
@@ -64,6 +67,8 @@ var app = new Vue({
       updateTime: '',
       timer: '',
       timer_coinmarketcap: '',
+      data_coin: [],
+      filter_name: ''
     }
   },
   created: function() {
@@ -74,9 +79,9 @@ var app = new Vue({
   methods: {
     fetchCoinList() {
       this.$http.get('http://crix-api-endpoint.upbit.com/v1/crix/trends/acc_trade_price_24h?includeNonactive=false').then(res => {
-        coinList = []
+        this.data_coin.length = 0
         tickers = res.body
-        tick_list = []
+        // tick_list = []
         // console.log(data_coinmarketcap)
         for (i in tickers) {
           ticker = tickers[i]
@@ -86,14 +91,18 @@ var app = new Vue({
           symbol = code_part[1]
 
           if (market === 'KRW') {
+            coin_name = data_coinmarketcap[findSymbol(symbol)].name
+            coin_name_code = coin_name.replace(' ', '_')
+            coin_name_code = coin_name_code.toLowerCase()
             ticker.volume = Math.round(ticker.tradePrice * ticker.tradeVolume)
             // console.log(data_coinmarketcap[findSymbol(symbol)])
             ticker.premium = ((ticker.tradePrice / data_coinmarketcap[findSymbol(symbol)].price - 1) * 100).toFixed(2)
-            tick_list.push(ticker)
+            ticker.coinmarketcap_link = `https://coinmarketcap.com/currencies/${coin_name_code}/#markets`
+            // tick_list.push(ticker)
 
-            coinList.push({
+            this.data_coin.push({
               symbol: symbol,
-              name: data_coinmarketcap[findSymbol(symbol)].name,
+              name: coin_name,
               price: ticker.tradePrice,
               premium: ticker.premium,
               amount: ticker.tradeVolume.toFixed(5),
@@ -102,13 +111,13 @@ var app = new Vue({
               // prev_price: ticker.prevClosingPrice,
               change_price: ticker.signedChangePrice,
               change: (ticker.signedChangeRate * 100).toFixed(2),
-              bid_power: (ticker.accBidVolume / ticker.accAskVolume).toFixed(2)
+              bid_power: (ticker.accBidVolume / ticker.accAskVolume).toFixed(2),
+              coinmarketcap_link: ticker.coinmarketcap_link
             })
           }
         }
-        // console.log(tick_list)
-        this.coinList = coinList
-        this.updateTime = coinList[0].timestamp
+        // console.log(this.data_coin)
+        this.displayCoinData()
       }, err => {
         console.log(err)
       })
@@ -144,6 +153,19 @@ var app = new Vue({
     cancelAutoUpdate() { 
       clearInterval(this.timer) 
       clearInterval(this.timer_coinmarketcap)
+    },
+
+    filterCoin(e) {
+      this.filter_name = e.target.value
+      this.displayCoinData();
+      
+    },
+
+    displayCoinData() {
+      this.coinList = this.data_coin.filter(coin => coin.symbol.search(this.filter_name.toUpperCase()) >= 0)
+      if (this.coinList[0]) {
+        this.updateTime = this.coinList[0].timestamp
+      }
     }
   },
   beforeDestroy() {
