@@ -1,0 +1,37 @@
+.card-panel {
+  padding: 5px;
+}
+
+.card .card-content {
+  padding: 5px;
+}
+
+.card .card-content .card-title {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 20px;
+  margin-bottom: 5px;
+}
+
+.card-title-info {
+  font-size: 10px;
+  font-weight: normal;
+}
+
+.index-unit {
+  font-size: 10px;
+}
+
+.index-title {
+  font-size: 10px;
+  color: gray;
+}
+
+.row .col {
+  padding: .20rem .25rem;
+}
+
+.row .col .index {
+  padding: .20rem .25rem;
+  line-height: 1.0;
+}
