@@ -25,8 +25,12 @@ Vue.component('coin-view', {
           <div class="row">
             <index-view title="현재가" v-bind:index="coin.price" unit="원" wide="s6"/>
             <index-view title="프리미엄" v-bind:index="coin.premium" unit="%" wide="s6"/>
-            <index-view title="증가량" v-bind:index="coin.change" unit="%" wide="s6"/>
-            <index-view title="증가액" v-bind:index="coin.change_price" unit="%" wide="s6"/>
+            <index-view title="1일" v-bind:index="coin.change" unit="%" wide="s4"/>
+            <index-view title="5분" v-bind:index="coin.change_5" unit="%" wide="s4"/>
+            <index-view title="15분" v-bind:index="coin.change_15" unit="%" wide="s4"/>
+            <index-view title="30분" v-bind:index="coin.change_30" unit="%" wide="s4"/>
+            <index-view title="60분" v-bind:index="coin.change_60" unit="%" wide="s4"/>
+            <index-view title="120분" v-bind:index="coin.change_120" unit="%" wide="s4"/>
             <index-view title="거래량" v-bind:index="coin.amount" unit="개" wide="s6"/>
             <index-view title="거래금액" v-bind:index="coin.volume" unit="원" wide="s6"/>
             <index-view title="구매강도" v-bind:index="coin.bid_power" unit="배" wide="s6"/>
@@ -50,7 +54,7 @@ Vue.component('index-view', {
   `
 })
 
-data_coinmarketcap = {}
+DATA_MAX = 120
 
 findSymbol = function(symbol) {
   if (symbol === 'BCC') {
@@ -67,7 +71,8 @@ var app = new Vue({
       updateTime: '',
       timer: '',
       timer_coinmarketcap: '',
-      data_coin: [],
+      data_coin: {},
+      data_coinmarketcap: {},
       filter_name: ''
     }
   },
@@ -79,7 +84,7 @@ var app = new Vue({
   methods: {
     fetchCoinList() {
       this.$http.get('http://crix-api-endpoint.upbit.com/v1/crix/trends/acc_trade_price_24h?includeNonactive=false').then(res => {
-        this.data_coin.length = 0
+        // this.data_coin.length = 0
         tickers = res.body
         // tick_list = []
         // console.log(data_coinmarketcap)
@@ -91,16 +96,16 @@ var app = new Vue({
           symbol = code_part[1]
 
           if (market === 'KRW') {
-            coin_name = data_coinmarketcap[findSymbol(symbol)].name
-            coin_name_code = coin_name.replace(' ', '_')
+            coin_name = this.data_coinmarketcap[findSymbol(symbol)].name
+            coin_name_code = coin_name.replace(' ', '-')
             coin_name_code = coin_name_code.toLowerCase()
             ticker.volume = Math.round(ticker.tradePrice * ticker.tradeVolume)
             // console.log(data_coinmarketcap[findSymbol(symbol)])
-            ticker.premium = ((ticker.tradePrice / data_coinmarketcap[findSymbol(symbol)].price - 1) * 100).toFixed(2)
+            ticker.premium = ((ticker.tradePrice / this.data_coinmarketcap[findSymbol(symbol)].price - 1) * 100).toFixed(2)
             ticker.coinmarketcap_link = `https://coinmarketcap.com/currencies/${coin_name_code}/#markets`
             // tick_list.push(ticker)
 
-            this.data_coin.push({
+            new_data = {
               symbol: symbol,
               name: coin_name,
               price: ticker.tradePrice,
@@ -109,14 +114,41 @@ var app = new Vue({
               volume: ticker.volume,
               timestamp: ticker.tradeTimestamp,
               // prev_price: ticker.prevClosingPrice,
-              change_price: ticker.signedChangePrice,
               change: (ticker.signedChangeRate * 100).toFixed(2),
               bid_power: (ticker.accBidVolume / ticker.accAskVolume).toFixed(2),
               coinmarketcap_link: ticker.coinmarketcap_link
-            })
+            }
+            
+            if (!(symbol in this.data_coin)) {
+              this.data_coin[symbol] = [new_data]
+            } else {
+              d = this.data_coin[symbol]
+              last_data = d[d.length-1]
+              // console.log(last_data)
+              if (last_data.timestamp !== new_data.timestamp) {
+                if (d.length >= 5) {
+                  new_data.change_5 = ((new_data.price / d[4].price - 1) * 100).toFixed(2)
+                }
+                if (d.length >= 15) {
+                  new_data.change_15 = ((new_data.price / d[14].price - 1) * 100).toFixed(2)
+                }
+                if (d.length >= 30) {
+                  new_data.change_30 = ((new_data.price / d[29].price - 1) * 100).toFixed(2)
+                }
+                if (d.length >= 60) {
+                  new_data.change_60 = ((new_data.price / d[59].price - 1) * 100).toFixed(2)
+                }
+                if (d.length >= 120) {
+                  new_data.change_120 = ((new_data.price / d[119].price - 1) * 100).toFixed(2)
+                }
+                if (d.length === DATA_MAX) {
+                  d.shift()
+                }
+                d.push(new_data)
+              }
+            }
           }
         }
-        // console.log(this.data_coin)
         this.displayCoinData()
       }, err => {
         console.log(err)
@@ -131,7 +163,7 @@ var app = new Vue({
         // console.log(tickers)
         for (i in tickers) {
           ticker = tickers[i]
-          data_coinmarketcap[ticker.symbol] = {
+          this.data_coinmarketcap[ticker.symbol] = {
             symbol: ticker.symbol,
             name: ticker.name,
             price: Math.round(ticker.price_krw),
@@ -162,7 +194,19 @@ var app = new Vue({
     },
 
     displayCoinData() {
-      this.coinList = this.data_coin.filter(coin => coin.symbol.search(this.filter_name.toUpperCase()) >= 0)
+      this.coinList = []
+      for (key in this.data_coin) {
+        filterName = this.filter_name.toUpperCase()
+        coinName = this.data_coin[key][0].name.toUpperCase()
+
+        if (key.search(filterName) >= 0
+            || coinName.search(filterName) >=0) {
+          d = this.data_coin[key]
+          // console.log(d)
+          this.coinList.push(d[d.length-1])
+        }
+      }
+      // console.log(this.coinList)
       if (this.coinList[0]) {
         this.updateTime = this.coinList[0].timestamp
       }
