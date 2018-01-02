@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <!--Import Google Icon Font-->
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css"/>
+    <link type="text/css" rel="stylesheet" href="style.css" />
+    
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/vue-currency-filter@2.0.1/dist/VueCurrencyFilter.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      
+      <div class="row">
+        <div class="col s6 m4 l2">
+        <input type="text" id="coin-input" @keyup="filterCoin">
+        </div>
+        <div class="col s4 offset-s8 right-align" id="update-time">Binance ({{updateTime | formatDate}})</span>
+        
+      </div>
+      <div class="row">
+        <coin-view 
+          v-for="coin in coinList"
+          v-bind:coin="coin"
+          v-bind:key="coin.symbol">
+        </coin-view>
+      </div>
+    </div>
+    
+
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="binance.js"></script>
+  </body>
+</html>
