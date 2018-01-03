@@ -10,7 +10,7 @@ Vue.filter('currency', function(value) {
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
     return parts.join('.');
   }
-  return 0
+  return 'N/A'
 })
 
 Vue.component('coin-view', {
@@ -51,7 +51,7 @@ Vue.component('index-view', {
   `
 })
 
-DATA_MAX = 1
+DATA_MAX = 200
 
 findSymbol = function(symbol) {
   mapping = {
@@ -75,13 +75,13 @@ var app = new Vue({
       timer: '',
       timer_coinmarketcap: '',
       data_coin: {},
-      data_coinmarketcap: {},
+      data_coinmarketcap: '',
       filter_name: ''
     }
   },
   created: function() {
     this.fetchCoinMarketCap();
-    this.timer = setInterval(this.fetchCoinList, 30000)
+    this.timer = setInterval(this.fetchCoinList, 20000)
     this.timer_coinmarketcap = setInterval(this.fetchCoinMarketCap, 240000)
   },
   methods: {
@@ -167,14 +167,17 @@ var app = new Vue({
     fetchCoinMarketCap() {
       this.$http.get('https://files.coinmarketcap.com/generated/search/quick_search.json').then(res => {
         tickers = res.body
+        this.data_coinmarketcap = TAFFY(tickers)
+
+        console.log(this.data_coinmarketcap({}))
         // console.log(tickers)
-        for (i in tickers) {
-          ticker = tickers[i]
-          this.data_coinmarketcap[ticker.symbol] = {
-            symbol: ticker.symbol,
-            name: ticker.name
-          }
-        }
+        // for (i in tickers) {
+        //   ticker = tickers[i]
+        //   this.data_coinmarketcap[ticker.symbol] = {
+        //     symbol: ticker.symbol,
+        //     name: ticker.name
+        //   }
+        // }
         // console.log(this.data_coinmarketcap)
         this.fetchCoinList()
       }, err => {

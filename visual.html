@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://d3js.org/d3.v4.min.js"></script>                                       
+</head> 
+<body>
+  <script>
+    // d3.select("body").append("div")
+    //   .style("border", "1px black solid")
+    //   .html("hello world");
+
+    // d3.select("div")
+    //   .style("background-color", "pink")
+    //   .style("font-size", "24px")
+    //   .attr("id", "newDiv")
+    //   .attr("class", "d3div")
+    //   .on("click", () => {console.log("You clicked a div")});
+
+    d3.select("body")
+      .append("svg")
+      .style("width", 500)
+      .style("height", 500);
+
+    d3.select("svg")
+      .selectAll("rect")
+      .data([15, 50, 22, 8, 100, 10])
+      .enter()
+      .append("rect")
+      .attr("width", 10)                      
+      .attr("height", d => d)
+      .style("opacity", .25)
+      .attr("x", (d,i) => i * 10);                 
+  </script>
+</body>
+</html>

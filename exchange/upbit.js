@@ -10,7 +10,7 @@ Vue.filter('currency', function(value) {
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
     return parts.join('.');
   }
-  return 0
+  return 'N/A'
 })
 
 Vue.component('coin-view', {
@@ -56,9 +56,13 @@ Vue.component('index-view', {
 
 DATA_MAX = 120
 
+symbol_map = {
+  'BCC': 'BCH'
+}
+
 findSymbol = function(symbol) {
-  if (symbol === 'BCC') {
-    return 'BCH'
+  if (symbol in symbol_map) {
+    return symbol_map[symbol]
   }
   return symbol
 }
@@ -71,8 +75,8 @@ var app = new Vue({
       updateTime: '',
       timer: '',
       timer_coinmarketcap: '',
-      data_coin: {},
-      data_coinmarketcap: {},
+      data_coin: TAFFY(),
+      data_coinmarketcap: TAFFY(),
       filter_name: ''
     }
   },
@@ -96,16 +100,18 @@ var app = new Vue({
           symbol = code_part[1]
 
           if (market === 'KRW') {
-            coin_name = this.data_coinmarketcap[findSymbol(symbol)].name
+            coinmarket = this.data_coinmarketcap({symbol: findSymbol(symbol)}).first()
+            coin_name = coinmarket.name
             coin_name_code = coin_name.replace(' ', '-')
             coin_name_code = coin_name_code.toLowerCase()
             ticker.volume = Math.round(ticker.tradePrice * ticker.tradeVolume)
             // console.log(data_coinmarketcap[findSymbol(symbol)])
-            ticker.premium = ((ticker.tradePrice / this.data_coinmarketcap[findSymbol(symbol)].price - 1) * 100).toFixed(2)
+            ticker.premium = ((ticker.tradePrice / coinmarket.price - 1) * 100).toFixed(2)
             ticker.coinmarketcap_link = `https://coinmarketcap.com/currencies/${coin_name_code}/#markets`
             // tick_list.push(ticker)
 
             new_data = {
+              id: `${symbol}_${ticker.tradeTimestamp}`,
               symbol: symbol,
               name: coin_name,
               price: ticker.tradePrice,
@@ -119,34 +125,9 @@ var app = new Vue({
               coinmarketcap_link: ticker.coinmarketcap_link
             }
             
-            if (!(symbol in this.data_coin)) {
-              this.data_coin[symbol] = [new_data]
-            } else {
-              d = this.data_coin[symbol]
-              last_data = d[d.length-1]
-              // console.log(last_data)
-              if (last_data.timestamp !== new_data.timestamp) {
-                if (d.length >= 5) {
-                  new_data.change_5 = ((new_data.price / d[4].price - 1) * 100).toFixed(2)
-                }
-                if (d.length >= 15) {
-                  new_data.change_15 = ((new_data.price / d[14].price - 1) * 100).toFixed(2)
-                }
-                if (d.length >= 30) {
-                  new_data.change_30 = ((new_data.price / d[29].price - 1) * 100).toFixed(2)
-                }
-                if (d.length >= 60) {
-                  new_data.change_60 = ((new_data.price / d[59].price - 1) * 100).toFixed(2)
-                }
-                if (d.length >= 120) {
-                  new_data.change_120 = ((new_data.price / d[119].price - 1) * 100).toFixed(2)
-                }
-                if (d.length === DATA_MAX) {
-                  d.shift()
-                }
-                d.push(new_data)
-              }
-            }
+            this.data_coin.merge(new_data)
+            
+            console.log(this.data_coin({symbol:'ADA'}).get())
           }
         }
         this.displayCoinData()
@@ -161,9 +142,12 @@ var app = new Vue({
       this.$http.get('https://api.coinmarketcap.com/v1/ticker/?convert=KRW&limit=300').then(res => {
         tickers = res.body
         // console.log(tickers)
+
+        this.data_coinmarketcap().remove()
+
         for (i in tickers) {
           ticker = tickers[i]
-          this.data_coinmarketcap[ticker.symbol] = {
+          this.data_coinmarketcap.insert({
             symbol: ticker.symbol,
             name: ticker.name,
             price: Math.round(ticker.price_krw),
@@ -173,8 +157,9 @@ var app = new Vue({
             change_1h: ticker.percent_change_1h,
             change_1d: ticker.percent_change_24h,
             change_7d: ticker.percent_change_7d
-          }
+          })
         }
+
         this.fetchCoinList()
       }, err => {
         console.log(err)
