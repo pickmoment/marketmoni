@@ -10,6 +10,12 @@ Vue.filter('formatDay', function(value) {
   }
 })
 
+Vue.filter('formatTime', function(value) {
+  if (value) {
+    return moment(value).format('HH:mm:ss')
+  }
+})
+
 
 Vue.filter('currency', function(value) {
   if (value) {
@@ -49,7 +55,7 @@ Vue.component('coin-board', {
         </th>
         <th class="right-align">
           <div>Volume/s</div>
-          <div>시작시간</div>
+          <div>만원/s</div>
         </th>
       </tr>
     </thead>
@@ -71,7 +77,7 @@ Vue.component('coin-view', {
   template: `
     <tr>
       <td class="right-align">
-        <div>{{coin.symbol}}</div> 
+        <div><span class="update-time">{{coin.start_timestamp | formatTime}}</span> <span>{{coin.symbol}}</span></div> 
         <div><a v-bind:href="coin.coinmarketcap_link" target="_blank">{{coin.name}}</a></div>
       </td>
       <td class="right-align">
@@ -92,7 +98,7 @@ Vue.component('coin-view', {
       </td>
       <td class="right-align">
         <div>{{coin.volume_speed | currency}}</div>
-        <div>{{coin.start_timestamp | formatDay}}</div>
+        <div>{{coin.money_speed | currency}}</div>
       </td>
     </tr> 
   `        
@@ -207,6 +213,7 @@ var app = new Vue({
 
             ticker.tradeVolumes = tickers.map(t => t.tradeVolume).reduce((a, b) => b += a)
             ticker.volume_speed = (ticker.tradeVolumes / ticker.seconds).toFixed(5)
+            ticker.money_speed = (((ticker.tradeVolumes / ticker.seconds) * ticker.tradePrice) / 10000).toFixed(0)
 
             // console.log(symbol, ticker.coin_name, ticker.premium, ticker.tradePrice, 
             //   ticker.change_1d, ticker.change_min, ticker.change_median, ticker.change_max, 
@@ -224,6 +231,7 @@ var app = new Vue({
               speed: ticker.speed,
               bidrate: ticker.bidrate,
               volume_speed: ticker.volume_speed,
+              money_speed: ticker.money_speed,
               seconds: ticker.seconds,
               count: tickers.length,
               timestamp: ticker.tradeTimestamp,
@@ -231,6 +239,8 @@ var app = new Vue({
               coinmarketcap_link: ticker.coinmarketcap_link
             }
             
+            // console.log(new_data)
+
             this.data_coin[symbol] = new_data
           }
         }
