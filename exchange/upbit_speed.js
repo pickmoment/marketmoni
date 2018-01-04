@@ -46,8 +46,8 @@ Vue.component('coin-board', {
           <div>최소%</div>
         </th>
         <th class="right-align">
-          <div>중간%</div>
           <div>최대%</div>
+          <div>중간%</div>
         </th>
         <th class="right-align">
           <div>Tick/s</div>
@@ -77,7 +77,7 @@ Vue.component('coin-view', {
   template: `
     <tr>
       <td class="right-align">
-        <div><span class="update-time">{{coin.start_timestamp | formatTime}}</span> <span>{{coin.symbol}}</span></div> 
+        <div><span class="update-time">{{coin.start_timestamp | formatTime}}({{(coin.seconds/60).toFixed(1)}})</span> <span>{{coin.symbol}}</span></div> 
         <div><a v-bind:href="coin.coinmarketcap_link" target="_blank">{{coin.name}}</a></div>
       </td>
       <td class="right-align">
@@ -89,8 +89,8 @@ Vue.component('coin-view', {
         <div>{{coin.change_min | currency}}</div>
       </td>
       <td class="right-align">
-        <div>{{coin.change_median | currency}}</div>
         <div>{{coin.change_max | currency}}</div>
+        <div>{{coin.change_median | currency}}</div>
       </td>
       <td class="right-align">
         <div>{{coin.speed | currency}}</div>
@@ -104,7 +104,7 @@ Vue.component('coin-view', {
   `        
 })
 
-TICK_COUNT = 1000
+TICK_COUNT = 2000
 
 symbol_map = {
   'BCC': 'BCH'
@@ -244,11 +244,12 @@ var app = new Vue({
             this.data_coin[symbol] = new_data
           }
         }
-        this.displayCoinData()
+        // this.displayCoinData()
       }, err => {
         console.log(err)
       })
     }
+    this.displayCoinData()
       
     },
 
@@ -292,16 +293,29 @@ var app = new Vue({
 
     displayCoinData() {
       this.coinList = []
+      coins = []
       for (key in this.data_coin) {
         filterName = this.filter_name.toUpperCase()
         coinName = this.data_coin[key].name.toUpperCase()
 
         if (key.search(filterName) >= 0
             || coinName.search(filterName) >=0) {
-          this.coinList.push(this.data_coin[key])
+          coins.push(this.data_coin[key])
         }
       }
-      // console.log(this.coinList)
+
+      this.coinList = coins.sort((a,b) => {
+        num1 = Number(a.money_speed)
+        num2 = Number(b.money_speed)
+        if (num1 < num2) {
+          return 1;
+        } else if (num1 > num2) {
+          return -1;
+        } else {
+          return 0
+        }
+      })
+
       if (this.coinList[0]) {
         this.updateTime = this.coinList[0].timestamp
       }
