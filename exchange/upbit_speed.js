@@ -36,19 +36,19 @@ Vue.component('coin-board', {
           <div>현재가</div>
         </th>
         <th class="right-align">
-          <div>1일 %</div>
-          <div>최소 %</div>
+          <div>1일%</div>
+          <div>최소%</div>
         </th>
         <th class="right-align">
-          <div>중간 %</div>
-          <div>최대 %</div>
+          <div>중간%</div>
+          <div>최대%</div>
         </th>
         <th class="right-align">
-          <div>초당Tick</div>
-          <div>Bid율</div>
+          <div>Tick/s</div>
+          <div>Bid%</div>
         </th>
         <th class="right-align">
-          <div>초당Volume</div>
+          <div>Volume/s</div>
           <div>시작시간</div>
         </th>
       </tr>
