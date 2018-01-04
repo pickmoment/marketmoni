@@ -4,6 +4,13 @@ Vue.filter('formatDate', function(value) {
   }
 })
 
+Vue.filter('formatDay', function(value) {
+  if (value) {
+    return moment(value).format('MM/DD HH:mm:ss')
+  }
+})
+
+
 Vue.filter('currency', function(value) {
   if (value) {
     parts = value.toString().split('.')
@@ -85,7 +92,7 @@ Vue.component('coin-view', {
       </td>
       <td class="right-align">
         <div>{{coin.volume_speed | currency}}</div>
-        <div>{{coin.start_timestamp | formatDate}}</div>
+        <div>{{coin.start_timestamp | formatDay}}</div>
       </td>
     </tr> 
   `        
