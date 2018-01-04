@@ -71,7 +71,7 @@ var app = new Vue({
       this.$http.get('https://api.coinmarketcap.com/v1/ticker/?convert=KRW&limit=100').then(res => {
         coinList = []
         tickers = res.body
-        console.log(tickers)
+        // console.log(tickers)
         for (i in tickers) {
           ticker = tickers[i]
           coinList.push({

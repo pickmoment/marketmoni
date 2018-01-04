@@ -201,9 +201,9 @@ var app = new Vue({
             ticker.tradeVolumes = tickers.map(t => t.tradeVolume).reduce((a, b) => b += a)
             ticker.volume_speed = (ticker.tradeVolumes / ticker.seconds).toFixed(5)
 
-            console.log(symbol, ticker.coin_name, ticker.premium, ticker.tradePrice, 
-              ticker.change_1d, ticker.change_min, ticker.change_median, ticker.change_max, 
-              tickers.length, ticker.seconds, ticker.speed, ticker.bidrate, ticker.volume_speed)
+            // console.log(symbol, ticker.coin_name, ticker.premium, ticker.tradePrice, 
+            //   ticker.change_1d, ticker.change_min, ticker.change_median, ticker.change_max, 
+            //   tickers.length, ticker.seconds, ticker.speed, ticker.bidrate, ticker.volume_speed)
 
             new_data = {
               symbol: symbol,
