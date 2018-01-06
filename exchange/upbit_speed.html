@@ -15,6 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>    
+    <script src="https://unpkg.com/accounting-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-currency-filter@2.0.1/dist/VueCurrencyFilter.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/taffydb/2.7.3/taffy-min.js"></script>
@@ -31,10 +32,11 @@
           <input type="text" id="coin-input" @keyup="filterCoin">
         </div>
       </div>
-
-      <coin-board :coins="coinList"/>
+      <div>
+        <coin-board :coins="coinList" :coin_localdb="coin_localdb"/>
+      </div>
+      <div class="update-time"><a href="https://steemit.com/upbit/@pickmoment/3mtbpt" target="_blank">사용방법은 여기를 참고하세요</a></div>
     </div>
-    <div><a href="https://steemit.com/upbit/@pickmoment/3mtbpt" target="_blank">사용방법은 여기를 참고하세요</a></div>
     
 
     <!--Import jQuery before materialize.js-->

@@ -32,11 +32,11 @@ Vue.filter('currency', function(value) {
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
     return parts.join('.');
   }
-  return 'N/A'
+  return ''
 })
 
 Vue.component('coin-board', {
-  props: ['coins'],
+  props: ['coins', 'coin_localdb'],
   template: `
     <div class="row">
     <div class="col s12 m9 l6">
@@ -49,6 +49,7 @@ Vue.component('coin-board', {
         <th class="right-align">
           <div>프리미엄</div>
           <div>현재가</div>
+          <div>수익률</div>
         </th>
         <th class="right-align">
           <div>1일%</div>
@@ -72,7 +73,8 @@ Vue.component('coin-board', {
       <coin-view 
         v-for="coin in coins"
         v-bind:coin="coin"
-        v-bind:key="coin.symbol">
+        v-bind:key="coin.symbol"
+        v-bind:coin_work="coin_localdb[coin.symbol].work">
       </coin-view>
     </tbody>
   </table>
@@ -81,17 +83,21 @@ Vue.component('coin-board', {
 `        
 })
 
+Vue.use('vue-numeric')
+
 Vue.component('coin-view', {
-  props: ['coin'],
+  props: ['coin', 'coin_work'],
   template: `
     <tr>
       <td class="right-align">
         <div><span class="update-time">({{coin.seconds | formatElapseTime}})</span> <span>{{coin.symbol}}</span></div> 
         <div><a v-bind:href="coin.coinmarketcap_link" target="_blank">{{coin.name}}</a></div>
+        <div><input type="text" class="browser-default right-align input-buy-price" size="10" v-model.trim="coin_work.buy_price" @change="saveBuyPrice" /></div> 
       </td>
       <td class="right-align">
         <div>{{coin.premium | currency}}</div>
         <div>{{coin.price | currency}}</div>
+        <div>{{coin.earn | currency}}</div>
       </td>
       <td class="right-align">
         <div>{{coin.chnage_1d | currency}}</div>
@@ -110,7 +116,12 @@ Vue.component('coin-view', {
         <div>{{coin.money_speed | currency}}</div>
       </td>
     </tr> 
-  `        
+    `,
+  methods: {
+    saveBuyPrice(e) {
+      localStorage.setItem(`upbit.krw.${this.coin.symbol}`, this.coin_work.buy_price)
+    },
+  }
 })
 
 TICK_COUNT = 100
@@ -137,7 +148,8 @@ var app = new Vue({
       timer_coinmarketcap: '',
       data_coin: {},
       data_coinmarketcap: {},
-      filter_name: ''
+      filter_name: '',
+      coin_localdb: {}
     }
   },
   created: function() {
@@ -156,9 +168,13 @@ var app = new Vue({
           
           if (market === 'KRW') {
             this.coinCodes.push(symbol)
+            this.coin_localdb[symbol] = {
+              work: {
+                buy_price: localStorage.getItem(`upbit.krw.${symbol}`)
+              }
+            }
           }
         }
-
         this.fetchCoinMarketCap();
         this.timer_coinmarketcap = setInterval(this.fetchCoinMarketCap, 300000)
             
@@ -227,6 +243,10 @@ var app = new Vue({
             // console.log(symbol, ticker.coin_name, ticker.premium, ticker.tradePrice, 
             //   ticker.change_1d, ticker.change_min, ticker.change_median, ticker.change_max, 
             //   tickers.length, ticker.seconds, ticker.speed, ticker.bidrate, ticker.volume_speed)
+            let buy_price = this.coin_localdb[symbol].work.buy_price
+            if (buy_price) {
+              ticker.earn = ((ticker.tradePrice / buy_price - 1) * 100).toFixed(2)
+            }
 
             new_data = {
               symbol: symbol,
@@ -245,7 +265,8 @@ var app = new Vue({
               count: tickers.length,
               timestamp: ticker.tradeTimestamp,
               start_timestamp: tickers[tickers.length-1].tradeTimestamp,
-              coinmarketcap_link: ticker.coinmarketcap_link
+              coinmarketcap_link: ticker.coinmarketcap_link,
+              earn: ticker.earn
             }
             
             // console.log(new_data)
@@ -333,5 +354,5 @@ var app = new Vue({
     clearInterval(this.timer)
     clearInterval(this.timer_coinmarketcap)
   }
-
 })
+
