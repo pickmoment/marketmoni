@@ -254,7 +254,7 @@ var app = new Vue({
               if (buy_amount) {
                 ticker.earn_volume = Math.floor((ticker.tradePrice - buy_price) * buy_amount * 0.95)
               }
-              console.log(symbol, buy, buy_price, buy_amount, ticker.earn_rate, ticker.earn_volume)
+              // console.log(symbol, buy, buy_price, buy_amount, ticker.earn_rate, ticker.earn_volume)
             }
 
             new_data = {
