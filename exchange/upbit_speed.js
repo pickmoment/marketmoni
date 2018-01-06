@@ -66,6 +66,7 @@ Vue.component('coin-board', {
         <th class="right-align">
           <div>Volume/s</div>
           <div>만원/s</div>
+          <div>수익금(원)</div>
         </th>
       </tr>
     </thead>
@@ -92,12 +93,12 @@ Vue.component('coin-view', {
       <td class="right-align">
         <div><span class="update-time">({{coin.seconds | formatElapseTime}})</span> <span>{{coin.symbol}}</span></div> 
         <div><a v-bind:href="coin.coinmarketcap_link" target="_blank">{{coin.name}}</a></div>
-        <div><input type="text" class="browser-default right-align input-buy-price" size="10" v-model.trim="coin_work.buy_price" @change="saveBuyPrice" /></div> 
+        <div><input type="text" class="browser-default right-align input-buy-price" size="10" v-model.trim="coin_work.buy" @change="saveBuy" /></div> 
       </td>
       <td class="right-align">
         <div>{{coin.premium | currency}}</div>
         <div>{{coin.price | currency}}</div>
-        <div>{{coin.earn | currency}}</div>
+        <div>{{coin.earn_rate | currency}}</div>
       </td>
       <td class="right-align">
         <div>{{coin.chnage_1d | currency}}</div>
@@ -114,12 +115,13 @@ Vue.component('coin-view', {
       <td class="right-align">
         <div>{{coin.volume_speed | currency}}</div>
         <div>{{coin.money_speed | currency}}</div>
+        <div>{{coin.earn_volume | currency}}</div>
       </td>
     </tr> 
     `,
   methods: {
-    saveBuyPrice(e) {
-      localStorage.setItem(`upbit.krw.${this.coin.symbol}`, this.coin_work.buy_price)
+    saveBuy(e) {
+      localStorage.setItem(`upbit.krw.${this.coin.symbol}`, this.coin_work.buy)
     },
   }
 })
@@ -170,7 +172,7 @@ var app = new Vue({
             this.coinCodes.push(symbol)
             this.coin_localdb[symbol] = {
               work: {
-                buy_price: localStorage.getItem(`upbit.krw.${symbol}`)
+                buy: localStorage.getItem(`upbit.krw.${symbol}`)
               }
             }
           }
@@ -243,9 +245,16 @@ var app = new Vue({
             // console.log(symbol, ticker.coin_name, ticker.premium, ticker.tradePrice, 
             //   ticker.change_1d, ticker.change_min, ticker.change_median, ticker.change_max, 
             //   tickers.length, ticker.seconds, ticker.speed, ticker.bidrate, ticker.volume_speed)
-            let buy_price = this.coin_localdb[symbol].work.buy_price
-            if (buy_price) {
-              ticker.earn = ((ticker.tradePrice / buy_price - 1) * 100).toFixed(2)
+            let buy = this.coin_localdb[symbol].work.buy
+            if (buy) {
+              buy_parts = buy.split('/')
+              buy_price = Number(buy_parts[0])
+              buy_amount = buy_parts[1] ? Number(buy_parts[1]) : undefined
+              ticker.earn_rate = ((ticker.tradePrice / buy_price - 1) * 100).toFixed(2)
+              if (buy_amount) {
+                ticker.earn_volume = Math.floor((ticker.tradePrice - buy_price) * buy_amount * 0.95)
+              }
+              console.log(symbol, buy, buy_price, buy_amount, ticker.earn_rate, ticker.earn_volume)
             }
 
             new_data = {
@@ -266,7 +275,8 @@ var app = new Vue({
               timestamp: ticker.tradeTimestamp,
               start_timestamp: tickers[tickers.length-1].tradeTimestamp,
               coinmarketcap_link: ticker.coinmarketcap_link,
-              earn: ticker.earn
+              earn_rate: ticker.earn_rate,
+              earn_volume: ticker.earn_volume
             }
             
             // console.log(new_data)
