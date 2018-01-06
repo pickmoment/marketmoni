@@ -45,15 +45,17 @@ Vue.component('coin-board', {
       <tr>
         <th class="right-align">
           <div>코인</div>
+          <div>단가/수량</div>
         </th>
         <th class="right-align">
           <div>프리미엄</div>
           <div>현재가</div>
-          <div>수익률</div>
+          <div>수익%</div>
         </th>
         <th class="right-align">
           <div>1일%</div>
           <div>최소%</div>
+          <div>수익(원)</div>
         </th>
         <th class="right-align">
           <div>최대%</div>
@@ -66,7 +68,7 @@ Vue.component('coin-board', {
         <th class="right-align">
           <div>Volume/s</div>
           <div>만원/s</div>
-          <div>수익금(원)</div>
+          <div>시총(억원)</div>
         </th>
       </tr>
     </thead>
@@ -103,6 +105,7 @@ Vue.component('coin-view', {
       <td class="right-align">
         <div>{{coin.chnage_1d | currency}}</div>
         <div>{{coin.change_min | currency}}</div>
+        <div>{{coin.earn_volume | currency}}</div>
       </td>
       <td class="right-align">
         <div>{{coin.change_max | currency}}</div>
@@ -115,7 +118,7 @@ Vue.component('coin-view', {
       <td class="right-align">
         <div>{{coin.volume_speed | currency}}</div>
         <div>{{coin.money_speed | currency}}</div>
-        <div>{{coin.earn_volume | currency}}</div>
+        <div>{{coin.market_cap | currency}}</div>
       </td>
     </tr> 
     `,
@@ -218,6 +221,7 @@ var app = new Vue({
               coin_name_code = coin_name_code.toLowerCase()
               ticker.premium = ((ticker.tradePrice / coinmarket.price - 1) * 100).toFixed(2)
               ticker.coinmarketcap_link = `https://coinmarketcap.com/currencies/${coin_name_code}/#markets`
+              ticker.market_cap = coinmarket.market_cap
             }
             ticker.seconds = ((ticker.tradeTimestamp - tickers[tickers.length-1].tradeTimestamp) / 1000).toFixed(0)
             ticker.speed = (TICK_COUNT / ticker.seconds).toFixed(2)
@@ -276,7 +280,8 @@ var app = new Vue({
               start_timestamp: tickers[tickers.length-1].tradeTimestamp,
               coinmarketcap_link: ticker.coinmarketcap_link,
               earn_rate: ticker.earn_rate,
-              earn_volume: ticker.earn_volume
+              earn_volume: ticker.earn_volume,
+              market_cap: ticker.market_cap
             }
             
             // console.log(new_data)
