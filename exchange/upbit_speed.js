@@ -16,6 +16,15 @@ Vue.filter('formatTime', function(value) {
   }
 })
 
+Vue.filter('formatElapseTime', function(seconds) {
+  if (seconds) {
+    let second = seconds % 60
+    let minute = Math.floor(seconds / 60) % 60
+    let hour = Math.floor(seconds / 60 / 60)
+    return `${hour}:${minute}:${second}`
+  }
+})
+
 
 Vue.filter('currency', function(value) {
   if (value) {
@@ -77,7 +86,7 @@ Vue.component('coin-view', {
   template: `
     <tr>
       <td class="right-align">
-        <div><span class="update-time">{{coin.start_timestamp | formatTime}}({{(coin.seconds/60).toFixed(1)}})</span> <span>{{coin.symbol}}</span></div> 
+        <div><span class="update-time">({{coin.seconds | formatElapseTime}})</span> <span>{{coin.symbol}}</span></div> 
         <div><a v-bind:href="coin.coinmarketcap_link" target="_blank">{{coin.name}}</a></div>
       </td>
       <td class="right-align">
@@ -104,7 +113,7 @@ Vue.component('coin-view', {
   `        
 })
 
-TICK_COUNT = 2000
+TICK_COUNT = 100
 
 symbol_map = {
   'BCC': 'BCH'
@@ -151,7 +160,7 @@ var app = new Vue({
         }
 
         this.fetchCoinMarketCap();
-        this.timer_coinmarketcap = setInterval(this.fetchCoinMarketCap, 240000)
+        this.timer_coinmarketcap = setInterval(this.fetchCoinMarketCap, 300000)
             
         this.fetchCoinTicks()
         this.timer = setInterval(this.fetchCoinTicks, 10000)
@@ -192,7 +201,7 @@ var app = new Vue({
               ticker.premium = ((ticker.tradePrice / coinmarket.price - 1) * 100).toFixed(2)
               ticker.coinmarketcap_link = `https://coinmarketcap.com/currencies/${coin_name_code}/#markets`
             }
-            ticker.seconds = ((ticker.tradeTimestamp - tickers[tickers.length-1].tradeTimestamp) / 1000)
+            ticker.seconds = ((ticker.tradeTimestamp - tickers[tickers.length-1].tradeTimestamp) / 1000).toFixed(0)
             ticker.speed = (TICK_COUNT / ticker.seconds).toFixed(2)
             ticker.bidrate = (tickers.filter(t => t.askBid === 'BID').length / TICK_COUNT * 100).toFixed(2)
 
@@ -244,12 +253,11 @@ var app = new Vue({
             this.data_coin[symbol] = new_data
           }
         }
-        // this.displayCoinData()
+        this.displayCoinData()
       }, err => {
         console.log(err)
       })
     }
-    this.displayCoinData()
       
     },
 
