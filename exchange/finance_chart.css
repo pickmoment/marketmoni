@@ -32,6 +32,7 @@ path.candle.down {
 
 path.volume {
   fill: lightslategray;
+  opacity: 0.5;
 }
 
 .trendline {
@@ -85,12 +86,12 @@ path.volume {
 
 .ichimoku path.tenkansen {
   stroke: #0033FF;
-  /* opacity: 0.0; */
+  opacity: 0.0;
 }
 
 .ichimoku path.kijunsen {
-  stroke: #FBB117;
-  /* opacity: 0.0; */
+  stroke: rgb(127, 84, 196);
+  opacity: 0.0;
 }
 
 .ichimoku path.kumo {
@@ -106,13 +107,38 @@ path.volume {
 }
 
 .ichimoku path.senkouspana {
-  stroke: #006600;
+  stroke: #2b8b92;
   opacity: 0.0;
 }
 
 .ichimoku path.senkouspanb {
   stroke: #FF0000;
   opacity: 0.0;
+}
+
+.bollinger {
+  fill-opacity: 0.0;
+  stroke: black;
+}
+
+.bollinger path.middle {
+  opacity: 0.0;
+}
+
+.ema {
+  fill-opacity: 0.0;
+}
+
+.ema0 {
+  stroke: rgb(88, 110, 6);
+}
+
+.ema1 {
+  stroke: rgb(168, 48, 192);
+}
+
+.ema2 {
+  stroke: red;
 }
 
 .crosshair {

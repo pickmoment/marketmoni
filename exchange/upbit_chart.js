@@ -32,6 +32,11 @@ function findGetParameter(parameterName) {
 }            
 
 var code = findGetParameter('code');
+var ema = findGetParameter('ema');
+var ema_options = [10,30,90];
+if (ema) {
+  ema_options = ema.split(',').map(Number);
+}
 
 var parents = document.getElementsByName('chart');
 var charts = [];
@@ -49,6 +54,9 @@ var date_format = ['%H:%M:%S', '%d %H:%M', '%d %H:%M', '%d %H:%M', '%d %H:%M',
 for (var i = 0; i < periods.length; i++) {
   charts_refresh.push(get_coin(code, periods[i], charts[i]));
   charts[i].date_format(date_format[i])
+  if (ema_options) {
+    charts[i].ema_options(ema_options);
+  }
 }
 // chart.ohlc([{'date':'2018-01-01 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000},
 //             {'date':'2018-01-02 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000}])

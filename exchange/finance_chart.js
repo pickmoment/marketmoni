@@ -3,7 +3,12 @@ class FinanceChart {
     this.parent = parent;
     this.margin = { top: 10, right: 20, bottom: 20, left: 55 };
     this._date_format = '%d %H:%M'
+    this._ema_options = []
     this.init();
+  }
+
+  ema_options(options) {
+    this._ema_options = options;
   }
 
   period(period) {
@@ -61,6 +66,7 @@ class FinanceChart {
         };
       }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });    
       this._ichimoku = this.ichimokuIndicator(this._ohlc);
+      this._bollinger = this.bollingerIndicator(this._ohlc);
 
       this.candleMap = this._ohlc.reduce(function(map, obj) {
         map[obj.date] = obj;
@@ -89,6 +95,12 @@ class FinanceChart {
     this.volume = techan.plot.volume().accessor(this.candlestick.accessor()).xScale(this.x).yScale(this.yVolume);
     this.ichimoku = techan.plot.ichimoku().xScale(this.x).yScale(this.y);
     this.ichimokuIndicator = techan.indicator.ichimoku();
+    this.bollinger = techan.plot.bollinger().xScale(this.x).yScale(this.y);
+    this.bollingerIndicator = techan.indicator.bollinger();
+    this.emas = []
+    for (var i = 0; i < 3; i++) {
+      this.emas.push(techan.plot.ema().xScale(this.x).yScale(this.y));
+    }
 
     this.timeAnnotation = techan.plot.axisannotation().axis(this.xAxis).orient('bottom')
         .format(d3.timeFormat(this._date_format)).width(50)
@@ -115,9 +127,13 @@ class FinanceChart {
     this.frame = this.svg.append('g').attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
     this.plot = this.frame.append("g").attr("class", "plot").attr("transform", "translate(0,0)");
-    this.plot.append("g").attr("class", "volume").attr("clip-path", "url(#clip)");
     this.plot.append("g").attr("class", "ichimoku").attr("clip-path", "url(#clip)");
+    this.plot.append("g").attr("class", "bollinger").attr("clip-path", "url(#clip)");
+    for (var i = 0; i < 3; i++) {
+      this.plot.append("g").attr("class", "indicator ema ema"+i).attr("clip-path", "url(#clip)");
+    }
     this.plot.append("g").attr("class", "candlestick").attr("clip-path", "url(#clip)");
+    this.plot.append("g").attr("class", "volume").attr("clip-path", "url(#clip)");
 
     this.frame.append("g").attr("class", "x axis")
             .attr("transform", "translate(0," + this.innerHeight + ")");
@@ -138,13 +154,22 @@ class FinanceChart {
   draw() {
     var data = this._ohlc;
     if (!data) data = [];
+
     // this.x.domain(data.map(this.candlestick.accessor().d));
     this.x.domain(techan.scale.plot.time(data).domain());
-    this.y.domain(techan.scale.plot.ohlc(data, this.candlestick.accessor()).domain());
+    // this.y.domain(techan.scale.plot.ohlc(data, this.candlestick.accessor()).domain());
+    this.y.domain(techan.scale.plot.bollinger(this._bollinger, this.bollinger.accessor()).domain());
     this.yVolume.domain(techan.scale.plot.volume(data).domain());
   
     this.plot.selectAll("g.volume").datum(data).call(this.volume);
     this.plot.selectAll("g.ichimoku").datum(this._ichimoku).call(this.ichimoku);
+    this.plot.selectAll("g.bollinger").datum(this._bollinger).call(this.bollinger);
+    for (var i = 0; i < this._ema_options.length; i++) {
+      this.plot.selectAll("g.ema.ema"+i).datum(techan.indicator.ema().period(this._ema_options[i])(data)).call(this.emas[i]);
+    }
+    // this.plot.selectAll("g.ema.ema1").datum(techan.indicator.ema().period(10)(data)).call(this.ema1);
+    // this.plot.selectAll("g.ema.ema2").datum(techan.indicator.ema().period(30)(data)).call(this.ema2);
+    // this.plot.selectAll("g.ema.ema3").datum(techan.indicator.ema().period(90)(data)).call(this.ema3);
     this.plot.selectAll("g.candlestick").datum(data).call(this.candlestick);
   
     this.frame.selectAll("g.x.axis").call(this.xAxis);
@@ -153,7 +178,11 @@ class FinanceChart {
 
     this.frame.selectAll("g.crosshair.ohlc").call(this.crosshair); 
 
-    this.symbol.text(this._symbol);
+    var symbol_text = this._symbol;
+    if (this._ema_options) {
+      symbol_text += ` (ema:${this._ema_options})`;
+    }
+    this.symbol.text(symbol_text);
     this.candleText(data[data.length-1])
     this.timeAnnotation.format(d3.timeFormat(this._date_format));
   }

@@ -27,6 +27,7 @@ function display_coins(codes) {
   for (var i = 0; i < charts.length; i++) {
     charts_refresh.push(get_coin(codes[i], period, charts[i]));  
     charts[i].click_link(`upbit_chart.html?code=${codes[i]}`);
+    charts[i].ema_options(ema_options);
   }
   // chart.ohlc([{'date':'2018-01-01 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000},
   //             {'date':'2018-01-02 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000}])
@@ -73,5 +74,10 @@ function findGetParameter(parameterName) {
   return result;
 }  
 
+var ema = findGetParameter('ema');
+var ema_options = [30];
+if (ema) {
+  ema_options = ema.split(',').map(Number);
+}
 
 coin_list();
