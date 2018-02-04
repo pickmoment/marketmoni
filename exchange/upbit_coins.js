@@ -23,9 +23,8 @@ function display_coins(codes) {
   // chart.init();
   // get_stock('KR7178780003', charts[0])
   var charts_refresh = []
-  var period = 'minutes/60';
   for (var i = 0; i < charts.length; i++) {
-    charts_refresh.push(get_coin(codes[i], period, charts[i]));  
+    charts_refresh.push(get_coin(codes[i], period_option, charts[i]));  
     charts[i].click_link(`upbit_chart.html?code=${codes[i]}`);
     charts[i].ema_options(ema_options);
   }
@@ -35,7 +34,7 @@ function display_coins(codes) {
   
   function refreshData() {
     charts_refresh.forEach((f) => f());
-    setTimeout(refreshData, 600000);  
+    setTimeout(refreshData, refresh_option*1000);  
   }
   
   refreshData();
@@ -78,6 +77,18 @@ var ema = findGetParameter('ema');
 var ema_options = [30];
 if (ema) {
   ema_options = ema.split(',').map(Number);
+}
+
+var period = findGetParameter('period');
+var period_option = 'minutes/60';
+if (period) {
+  period_option = period;
+}
+
+var refresh = findGetParameter('refresh');
+var refresh_option = 60;
+if (refresh) {
+  refresh_option = refresh;
 }
 
 coin_list();

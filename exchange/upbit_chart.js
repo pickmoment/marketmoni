@@ -38,6 +38,12 @@ if (ema) {
   ema_options = ema.split(',').map(Number);
 }
 
+var refresh = findGetParameter('refresh');
+var refresh_option = 10;
+if (refresh) {
+  refresh_option = refresh;
+}
+
 var parents = document.getElementsByName('chart');
 var charts = [];
 for (var i = 0; i < parents.length; i++) {
@@ -58,13 +64,14 @@ for (var i = 0; i < periods.length; i++) {
     charts[i].ema_options(ema_options);
   }
 }
+
 // chart.ohlc([{'date':'2018-01-01 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000},
 //             {'date':'2018-01-02 00:00:00.0', 'openingPrice':'10', 'high': 100, low:1, close:50, volume: 5000}])
 // chart.draw();
 
 function refreshData() {
   charts_refresh.forEach((f) => f());
-  setTimeout(refreshData, 20000);  
+  setTimeout(refreshData, refresh_option*1000);  
 }
 
 refreshData();
