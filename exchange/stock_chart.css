@@ -1,0 +1,128 @@
+
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+text.symbol {
+  fill: gray;
+}
+
+path.candle {
+  stroke: #000000;
+}
+
+path.candle.body {
+  stroke-width: 0;
+}
+
+path.candle.up {
+  fill: red;
+  stroke: red;
+}
+
+path.candle.down {
+  fill: blue;
+  stroke: blue;
+}
+
+path.volume {
+  fill: #DDDDDD;
+}
+
+.trendline {
+  stroke: blue;
+  stroke-width: 0.8;
+}
+
+.trendline circle {
+  stroke-width: 0;
+  display: none;
+}
+
+.mouseover .trendline path {
+  stroke-width: 1;
+}
+
+.mouseover .trendline circle {
+  stroke-width: 1;
+  display: inline;
+}
+
+.dragging .trendline {
+  stroke: darkblue;
+}
+
+.interaction path, .interaction circle {
+  pointer-events: all;
+}
+
+.interaction .body {
+  cursor: move;
+}
+
+.interaction .start, .interaction .end {
+  cursor: nwse-resize;
+}
+
+.ichimoku path {
+  fill: none;
+  stroke-width: 0.8;
+}
+
+.ichimoku path {
+  stroke: #000000;
+}
+
+.ichimoku path.chikouspan {
+  stroke: #BF5FFF;
+  opacity: 0.0; 
+}
+
+.ichimoku path.tenkansen {
+  stroke: #0033FF;
+  /* opacity: 0.0; */
+}
+
+.ichimoku path.kijunsen {
+  stroke: #FBB117;
+  /* opacity: 0.0; */
+}
+
+.ichimoku path.kumo {
+  opacity: 0.4;
+}
+
+.ichimoku path.kumo.up {
+  fill: blue;
+}
+
+.ichimoku path.kumo.down {
+  fill: blue;
+}
+
+.ichimoku path.senkouspana {
+  stroke: #006600;
+  opacity: 0.0;
+}
+
+.ichimoku path.senkouspanb {
+  stroke: #FF0000;
+  opacity: 0.0;
+}
+
+.crosshair {
+  cursor: crosshair;
+}
+
+.crosshair path.wire {
+  stroke: #DDDDDD;
+  stroke-dasharray: 1, 1;
+}
+
+.crosshair .axisannotation path {
+  fill: #DDDDDD;
+}
