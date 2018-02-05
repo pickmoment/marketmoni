@@ -74,19 +74,19 @@ function findGetParameter(parameterName) {
 }  
 
 var ema = findGetParameter('ema');
-var ema_options = [30];
+var ema_options = [10,30,90];
 if (ema) {
   ema_options = ema.split(',').map(Number);
 }
 
 var period = findGetParameter('period');
-var period_option = 'minutes/60';
+var period_option = 'ticks/60';
 if (period) {
   period_option = period;
 }
 
 var refresh = findGetParameter('refresh');
-var refresh_option = 60;
+var refresh_option = 10;
 if (refresh) {
   refresh_option = refresh;
 }
