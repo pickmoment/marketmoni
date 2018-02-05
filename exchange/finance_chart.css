@@ -8,8 +8,11 @@ body {
   font: 9px helvetica;
 }
 
-text.symbol {
+span.symbol {
   fill: gray;
+  border: 1px solid;
+  padding: 1px 5px;
+  margin-right: 5px;
 }
 
 path.candle {
@@ -90,8 +93,9 @@ path.volume {
 }
 
 .ichimoku path.kijunsen {
-  stroke: rgb(127, 84, 196);
-  opacity: 0.0;
+  stroke: rgb(53, 173, 243);
+  stroke-width: 1.4;
+  /* opacity: 0.0; */
 }
 
 .ichimoku path.kumo {
@@ -120,7 +124,6 @@ path.volume {
   fill-opacity: 0.0;
   stroke: black;
 }
-
 .bollinger path.middle {
   opacity: 0.0;
 }
@@ -130,15 +133,18 @@ path.volume {
 }
 
 .ema0 {
-  stroke: rgb(88, 110, 6);
+  stroke: rgb(198, 250, 8);
+  stroke-width: 1.3;
 }
 
 .ema1 {
-  stroke: rgb(168, 48, 192);
+  stroke: rgb(233, 137, 252);
+  stroke-width: 1.4;
 }
 
 .ema2 {
   stroke: red;
+  stroke-width: 1.5;
 }
 
 .crosshair {

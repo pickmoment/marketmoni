@@ -1,14 +1,20 @@
 class FinanceChart {
   constructor(parent) {
     this.parent = parent;
-    this.margin = { top: 10, right: 20, bottom: 20, left: 55 };
+    this.margin = { top: 10, right: 50, bottom: 20, left: 55 };
     this._date_format = '%d %H:%M'
     this._ema_options = []
+    this._tick_count = 200;
+    this._offset = 0;
     this.init();
   }
 
   ema_options(options) {
     this._ema_options = options;
+  }
+
+  tick_count(count) {
+    this._tick_count = count;
   }
 
   period(period) {
@@ -117,6 +123,70 @@ class FinanceChart {
 
     this.svg = d3.select(this.parent).append("svg")
             .attr("width", this.width).attr("height", this.height);  
+    
+    this.symbol = d3.select(this.parent).append('span').attr("class", "symbol");
+    d3.select(this.parent).append("button").attr('class', 'plus').text('+').on('click', () => { 
+      if (this._tick_count > 1) {
+        this._tick_count--; 
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'plus').text('++').on('click', () => { 
+      if (this._tick_count > 5) {
+        this._tick_count-=5; 
+      } else if (this._tick_count > 1) {
+        this._tick_count = 1;
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'minus').text('-').on('click', () => { 
+      if (this._tick_count < this._ohlc.length) {
+        this._tick_count++; 
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'minus').text('--').on('click', () => { 
+      if (this._tick_count < this._ohlc.length - 5) {
+        this._tick_count += 5; 
+      } else if (this._tick_count < this._ohlc.length) {
+        this._tick_count = this._ohlc.length;
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'full').text('O').on('click', () => { 
+      this._tick_count = this._ohlc.length; 
+      this._offset = 0;
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'left').text('<<').on('click', () => { 
+      if (this._offset < this._ohlc.length - 5) {
+        this._offset += 5; 
+      } else if (this._offset < this._ohlc.length) {
+        this._offset = this._ohlc.length;
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'left').text('<').on('click', () => { 
+      if (this._offset < this._ohlc.length) {
+        this._offset++; 
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'right').text('>').on('click', () => { 
+      if (this._offset > 0) {
+        this._offset--; 
+      }
+      this.draw(); 
+    });
+    d3.select(this.parent).append("button").attr('class', 'right').text('>>').on('click', () => { 
+      if (this._offset > 5) {
+        this._offset -= 5; 
+      } else if (this._offset > 0) {
+        this._offset = 0;
+      }
+      this.draw(); 
+    });
+
 
     var defs = this.svg.append("defs");
 
@@ -135,7 +205,7 @@ class FinanceChart {
     this.plot.append("g").attr("class", "candlestick").attr("clip-path", "url(#clip)");
     this.plot.append("g").attr("class", "volume").attr("clip-path", "url(#clip)");
 
-    this.frame.append("g").attr("class", "x axis")
+    this.gX = this.frame.append("g").attr("class", "x axis")
             .attr("transform", "translate(0," + this.innerHeight + ")");
     this.frame.append("g").attr("class", "y axis")
             .append("text").attr("transform", "rotate(-90)")
@@ -147,8 +217,6 @@ class FinanceChart {
 
     this.coordsText = this.frame.append('text').style("text-anchor", "end")
             .attr("class", "coords").attr("x", this.innerWidth - this.margin.left + this.margin.right);    
-    this.symbol = this.frame.append('text').attr("class", "symbol").style("text-anchor", "end")
-            .attr("x", this.innerWidth - this.margin.left + this.margin.right).attr("y", 12);
   }
 
   draw() {
@@ -160,6 +228,11 @@ class FinanceChart {
     // this.y.domain(techan.scale.plot.ohlc(data, this.candlestick.accessor()).domain());
     this.y.domain(techan.scale.plot.bollinger(this._bollinger, this.bollinger.accessor()).domain());
     this.yVolume.domain(techan.scale.plot.volume(data).domain());
+
+    if (data.length > this._tick_count+this._offset && data.length > this._offset) {
+      this.x.zoomable().domain([data.length-this._tick_count-this._offset, data.length-this._offset]);
+    }
+    // this.gX.call(this.xAxis);
   
     this.plot.selectAll("g.volume").datum(data).call(this.volume);
     this.plot.selectAll("g.ichimoku").datum(this._ichimoku).call(this.ichimoku);
@@ -185,6 +258,7 @@ class FinanceChart {
     this.symbol.text(symbol_text);
     this.candleText(data[data.length-1])
     this.timeAnnotation.format(d3.timeFormat(this._date_format));
+
   }
 
   move(coords) {
