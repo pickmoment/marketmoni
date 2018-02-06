@@ -28,7 +28,11 @@ class FinanceChart {
 
   click_link(link) {
     this.symbol.on('click', function() {
-      window.open(link);
+      if (typeof link === "function") {
+        link();
+      } else {
+        window.open(link);
+      }
     });
   }
 
@@ -133,7 +137,7 @@ class FinanceChart {
     
     this.symbol = d3.select(this.parent).append('span').attr("class", "symbol");
     this.tick_count_input = d3.select(this.parent).append("input")
-        .attr('size', 4).attr('value', this._tick_count).on('change', () => {
+        .attr('size', 3).attr('value', this._tick_count).on('change', () => {
           this.tick_count(this.tick_count_input.node().value);
           this.draw();
         });

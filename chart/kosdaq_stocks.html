@@ -15,10 +15,18 @@
   <title>Document</title>
 </head>
 <body>
-  <div class="container is-fluid">
-    <div class="columns is-multiline" id="chart_columns">
-    </div>
+<div class="columns">
+  <div class="column is-1">
+    <input class="input is-small" type="text" placeholder="search" id="stock_search">
+    <nav id="stocks">
+    </nav>
   </div>
+  <div class="column">
+    <div class="column" id="buttons"></div>
+    <div class="columns is-multiline" id="chart_columns">
+    </div>  
+  </div>
+</div>  
   
   <script src="finance_chart.js"></script>  
   <script src="kosdaq_stocks.js"></script>  
