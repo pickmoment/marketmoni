@@ -1,19 +1,25 @@
+const PERIODS = ['1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h','1d','3d','1w','1M'];
+console.log('periods:', PERIODS);
+
 function coin_list(limit) {
-  const url = `https://crix-api-endpoint.upbit.com/v1/crix/trends/acc_trade_price_24h?includeNonactive=false&codeOnly=true`;
+  const url = `https://www.binance.com/exchange/public/product`;
   d3.json(url, function(error, data) {
+    data = data.data;
+    data.sort((a,b) => {
+      return b.tradedMoney - a.tradedMoney;
+    })
     codes = []
     var count = 0;
-    for (i in data) {
-      if (data[i].includes('KRW')) {
-        code = data[i].split('.')[2];
-        codes.push(code);
-        count++;
-        if (limit && limit <= count) {
-          break;
-        }
+    console.log('coins:', data.map((d)=>d.symbol));
+    for (var i = 0; i < data.length; i++) {
+      var symbol = data[i].symbol;
+      var currency = symbol.substr(symbol.length-3);
+      var coin = symbol.substr(0, symbol.length-3)
+      if (['ETH'].includes(currency)) {
+        codes.push(symbol)
       }
     }
-    display_coins(codes);
+    display_coins(codes.slice(0,12));
   }); 
 }
 
@@ -22,7 +28,10 @@ function display_coins(codes) {
   for (var i = 0; i < codes.length; i++) {
     var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-one-third-desktop').node();
     var chart = new FinanceChart(parent);
-    chart.click_link(`upbit_chart.html?code=${codes[i]}`);
+    if (ema_options) {
+      chart.ema_options(ema_options);
+    }
+    chart.click_link(`binance_chart.html?code=${codes[i]}`);
     charts_refresh.push(get_coin(codes[i], period_option, chart));
   }
   
@@ -34,21 +43,22 @@ function display_coins(codes) {
   refreshData();
 }
 
-function get_coin(code, period, chart) {
-  chart.mapper({
-    dateFormat: '%Y-%m-%dT%H:%M:%S%Z',
-    date:'candleDateTimeKst', 
-    open:'openingPrice',
-    high: 'highPrice',
-    low: 'lowPrice',
-    close: 'tradePrice',
-    volume: 'candleAccTradeVolume'
-  });
+function get_coin(code, period, chart) {  
   chart.symbol_text(code + ' ' + period);
-  
-  const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=200&code=CRIX.UPBIT.${code}`;
+    
+  const url = `https://api.binance.com/api/v1/klines?symbol=${code}&interval=${period}`;
   return function() {
     d3.json(url, function(error, data) {
+      data = data.map(function(d) {
+        return {
+          date: d[0],
+          open: d[1],
+          high: d[2],
+          low: d[3],
+          close: d[4],
+          volume: d[5]
+        }
+      })
       chart.ohlc(data)
       chart.draw();
     }); 
@@ -70,11 +80,11 @@ function findGetParameter(parameterName) {
 var ema = findGetParameter('ema');
 var ema_options = [10,30,90];
 if (ema) {
-  ema_options = ema.split(',').map(Number);
+  ema_options = ema.split(',').map(Number)
 }
 
 var period = findGetParameter('period');
-var period_option = 'ticks/60';
+var period_option = '5m';
 if (period) {
   period_option = period;
 }

@@ -159,3 +159,8 @@ path.volume {
 .crosshair .axisannotation path {
   fill: #DDDDDD;
 }
+
+text .tick_count {
+  width: 5;
+  size: 5;
+}
