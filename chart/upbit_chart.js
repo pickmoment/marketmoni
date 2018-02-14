@@ -39,7 +39,7 @@ if (ema) {
 }
 
 var refresh = findGetParameter('refresh');
-var refresh_option = 10;
+var refresh_option = 5;
 if (refresh) {
   refresh_option = refresh;
 }

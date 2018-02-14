@@ -20,7 +20,8 @@ function coin_list(limit) {
 function display_coins(codes) {
   var charts_refresh = [];
   for (var i = 0; i < codes.length; i++) {
-    var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-one-third-desktop').node();
+    // var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-one-third-desktop').node();
+    var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-half-desktop').node();
     var chart = new FinanceChart(parent);
     chart.click_link(`upbit_chart.html?code=${codes[i]}`);
     charts_refresh.push(get_coin(codes[i], period_option, chart));
@@ -45,15 +46,161 @@ function get_coin(code, period, chart) {
     volume: 'candleAccTradeVolume'
   });
   chart.symbol_text(code + ' ' + period);
+  chart.data_callback(data_callback)
   
   const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=200&code=CRIX.UPBIT.${code}`;
   return function() {
     d3.json(url, function(error, data) {
+      if (ema_options) {
+        chart.ema_options(ema_options);
+      }
       chart.ohlc(data)
       chart.draw();
     }); 
   }
 
+}
+
+function data_callback(data) {
+  // console.log(data)
+
+  low_peaks = []
+  high_peaks = []
+  size_2_ticks = []
+  for (var i = 0; i < data.ohlc.length; i++) {
+    if (i > 0 && i < data.ohlc.length) {
+      const prev = data.ohlc[i-1]
+      const curr = data.ohlc[i]
+      const next = data.ohlc[i+1]
+
+      size_2(prev, curr, next, size_2_ticks)
+      peak(i, data.ohlc, low_peaks, high_peaks)
+    }
+    // if (i == data.ohlc.length-1) {
+    //   console.log('Last:', data.ohlc[i])
+    // }
+  }
+
+  console.log(size_2_ticks)
+
+  for (var i = 0; i < data.ohlc.length; i++) {
+    analyse(i, data.ohlc, data.ichimoku, low_peaks, high_peaks, size_2_ticks)
+  }  
+  // analyse(data.ohlc.length -1, data.ohlc, low_peaks, high_peaks, size_2_ticks)
+
+  // console.log('Low Peaks:', low_peaks)
+  // console.log('High Peaks', high_peaks)
+  // console.log('Size2 Ticks:', size_2_ticks)
+}
+
+function first_prev(curr, peaks) {
+  for (var i = peaks.length-1; i >= 0; i--) {
+    if (curr.date > peaks[i].date) {
+      return peaks[i]
+    }
+  }
+}
+
+function is_in(curr, ticks) {
+  for (var i = ticks.length-1; i >= 0; i--) {
+    if (curr.date === ticks[i].date) {
+      return true
+    }
+  }
+}
+
+function analyse(index, ohlc, ichimoku, low_peaks, high_peaks, size_2_ticks) {
+  const range = 3
+  const i = index
+
+  if (i < range) {
+    return
+  }
+
+  const prevs = ohlc.slice(i-range, i)
+  const low = Math.min(...prevs.map((d)=>d.low))
+  const high = Math.max(...prevs.map((d)=>d.high))
+  const curr = ohlc[i]
+
+  var anals = []
+  
+  if (is_in(curr, size_2_ticks)) {
+    anals.push('기준점')
+  }
+
+  if (curr.low < low) {
+    anals.push('하락')
+  }
+
+  if (curr.high > high) {
+    anals.push('상승')
+  }
+
+  const first_prev_low_peak = first_prev(curr, low_peaks)
+  const first_prev_high_peak = first_prev(curr, high_peaks)
+  // console.log(first_prev_low_peak, first_prev_high_peak)
+
+  if (first_prev_low_peak && curr.low > first_prev_low_peak.low) {
+    anals.push('단기저점 위')
+  }
+
+  if (first_prev_high_peak && curr.high > first_prev_high_peak.high) {
+    anals.push('단기고점 위')
+  }
+
+  if (first_prev_low_peak && curr.low < first_prev_low_peak.low) {
+    anals.push('단기저점 밑')
+  }
+
+  if (first_prev_high_peak && curr.high < first_prev_high_peak.high) {
+    anals.push('단기고점 밑')
+  }
+
+  if (ichimoku[index].kijunSen) {
+    if (curr.low > ichimoku[index].kijunSen) {
+      anals.push('기준선 위')
+    } else {
+      anals.push("기준선 밑")
+    }
+  }
+
+  if (anals.length > 0) {
+    console.log(curr, anals)
+  }
+}
+
+function size_2(prev, curr, next, size_2_ticks) {
+  if (prev.volume * 2 < curr.volume) {
+    const prevHeight = prev.close - prev.open
+    const currHeight = curr.close - curr.open
+    const prevHeightAbs = Math.abs(prevHeight)
+    const currHeightAbs = Math.abs(currHeight)
+    // if (prevHeightAbs * 2 < currHeightAbs) {
+    const heightPercent = currHeightAbs / curr.low
+    if (heightPercent > 0.005 || prevHeightAbs * 2 < currHeightAbs) {
+      size_2_ticks.push(curr)
+    }
+    // }
+  }
+}
+
+function peak(i, ohlc, low_peaks, high_peaks) {
+  const range = 8
+  if (i < range) {
+    return
+  }
+  const curr = ohlc[i]
+  const prevs = ohlc.slice(i-range, i)
+  const nexts = ohlc.slice(i+1, i+1+range)
+  const neighbors = prevs.concat(nexts)
+  const low = Math.min(...neighbors.map((d)=>d.low))
+  const high = Math.max(...neighbors.map((d)=>d.high))
+  if (curr.high > high) {
+    high_peaks.push(curr)
+  }
+  if (curr.low < low) {
+    low_peaks.push(curr)
+  }
 }
 
 function findGetParameter(parameterName) {
@@ -71,16 +218,17 @@ var ema = findGetParameter('ema');
 var ema_options = [10,30,90];
 if (ema) {
   ema_options = ema.split(',').map(Number);
+  console.log('ema', ema)
 }
 
 var period = findGetParameter('period');
-var period_option = 'ticks/60';
+var period_option = 'minutes/5';
 if (period) {
   period_option = period;
 }
 
 var refresh = findGetParameter('refresh');
-var refresh_option = 10;
+var refresh_option = 500;
 if (refresh) {
   refresh_option = refresh;
 }

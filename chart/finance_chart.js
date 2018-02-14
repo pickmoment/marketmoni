@@ -9,6 +9,10 @@ class FinanceChart {
     this.init();
   }
 
+  data_callback(callback) {
+    this._data_callback = callback
+  }
+
   ema_options(options) {
     this._ema_options = options;
   }
@@ -113,7 +117,7 @@ class FinanceChart {
     this.ichimoku = techan.plot.ichimoku().xScale(this.x).yScale(this.y);
     this.ichimokuIndicator = techan.indicator.ichimoku();
     this.bollinger = techan.plot.bollinger().xScale(this.x).yScale(this.y);
-    this.bollingerIndicator = techan.indicator.bollinger();
+    this.bollingerIndicator = techan.indicator.bollinger().period(40);
     this.emas = []
     for (var i = 0; i < 3; i++) {
       this.emas.push(techan.plot.ema().xScale(this.x).yScale(this.y));
@@ -276,6 +280,15 @@ class FinanceChart {
     this.symbol.text(symbol_text);
     this.candleText(data[data.length-1])
     this.timeAnnotation.format(d3.timeFormat(this._date_format));
+
+    if (this._data_callback) {
+      this._data_callback({
+        'symbol': this._symbol,
+        'ohlc': this._ohlc,
+        'ichimoku': this._ichimoku,
+        'bollinger': this._bollinger
+      })
+    }
 
   }
 
