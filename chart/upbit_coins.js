@@ -85,8 +85,8 @@ function data_callback(data) {
   // console.log(size_2_ticks)
 
   // for (var i = 0; i < data.ohlc.length; i++) {
-    var i = data.ohlc.length-1
-    analyse(i, data.ohlc, data.ichimoku, low_peaks, high_peaks, size_2_ticks, data)
+    // var i = data.ohlc.length-1
+    // analyse(i, data.ohlc, data.ichimoku, low_peaks, high_peaks, size_2_ticks, data)
   // }  
   // analyse(data.ohlc.length -1, data.ohlc, low_peaks, high_peaks, size_2_ticks)
 
