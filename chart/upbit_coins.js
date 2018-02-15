@@ -37,6 +37,8 @@ function display_coins(codes) {
 }
 
 function get_coin(code, period, chart) {
+  var data_dict = {}
+
   chart.mapper({
     dateFormat: '%Y-%m-%dT%H:%M:%S%Z',
     date:'candleDateTimeKst', 
@@ -49,15 +51,40 @@ function get_coin(code, period, chart) {
   chart.symbol_text(code + ' ' + period);
   chart.data_callback(data_callback)
   
-  const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=200&code=CRIX.UPBIT.${code}`;
+  var count = 200
   return function() {
+    const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=${count}&code=CRIX.UPBIT.${code}`;
     d3.json(url, function(error, data) {
+      count = 2
       if (ema_options) {
         chart.ema_options(ema_options);
       }
-      chart.ohlc(data)
+      var f_data = filtered_data(data, data_dict) 
+      // console.log(f_data)
+      chart.ohlc(f_data)
       chart.draw();
     }); 
+  }
+
+  function filtered_data(data, data_dict) {
+    var result = []
+    for (var i = 0; i < data.length; i++) {
+      data_dict[data[i].candleDateTimeKst] = data[i]
+    }
+    var keys = Object.keys(data_dict).sort((a, b) => {
+      if (b > a) return 1
+      else if (b < a) return -1
+      else return 0
+    })
+    for (i = 0; i < keys.length; i++) {
+      if (i < 500) {
+        result.push(data_dict[keys[i]])
+      } else {
+        delete data_dict[keys[i]]
+      }
+
+    }
+    return result
   }
 
 }
