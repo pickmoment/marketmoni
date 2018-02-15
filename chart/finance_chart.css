@@ -103,11 +103,11 @@ path.volume {
 }
 
 .ichimoku path.kumo.up {
-  fill: blue;
+  fill: pink;
 }
 
 .ichimoku path.kumo.down {
-  fill: blue;
+  fill: skyblue;
 }
 
 .ichimoku path.senkouspana {

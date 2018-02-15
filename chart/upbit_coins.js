@@ -215,20 +215,20 @@ function findGetParameter(parameterName) {
 }  
 
 var ema = findGetParameter('ema');
-var ema_options = [10,30,90];
+var ema_options = [20,60,112,224];
 if (ema) {
   ema_options = ema.split(',').map(Number);
   console.log('ema', ema)
 }
 
 var period = findGetParameter('period');
-var period_option = 'minutes/5';
+var period_option = 'minutes/10';
 if (period) {
   period_option = period;
 }
 
 var refresh = findGetParameter('refresh');
-var refresh_option = 500;
+var refresh_option = 5;
 if (refresh) {
   refresh_option = refresh;
 }

@@ -119,7 +119,7 @@ class FinanceChart {
     this.bollinger = techan.plot.bollinger().xScale(this.x).yScale(this.y);
     this.bollingerIndicator = techan.indicator.bollinger().period(40);
     this.emas = []
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 5; i++) {
       this.emas.push(techan.plot.ema().xScale(this.x).yScale(this.y));
     }
 
