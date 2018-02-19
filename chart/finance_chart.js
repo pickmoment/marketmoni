@@ -60,6 +60,10 @@ class FinanceChart {
     return this.height - (this.margin.top + this.margin.bottom);
   }
 
+  get indicatorHeight() {
+    return this.innerHeight * 0.3
+  }
+
   isDict(v) {
       return !!v && typeof v==='object' && v!==null && !(v instanceof Array) && !(v instanceof Date) && isJsonable(v);
   }
@@ -119,9 +123,18 @@ class FinanceChart {
     this.bollinger = techan.plot.bollinger().xScale(this.x).yScale(this.y);
     this.bollingerIndicator = techan.indicator.bollinger().period(40);
     this.emas = []
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < 5; i++) {
       this.emas.push(techan.plot.ema().xScale(this.x).yScale(this.y));
     }
+
+    var indicatorTop = d3.scaleLinear().range([this.innerHeight + 5, this.indicatorHeight]);
+
+    this.rsiScale = d3.scaleLinear().range([indicatorTop(0)+this.indicatorHeight, indicatorTop(0)]);
+    this.rsi = techan.plot.rsi().xScale(this.x).yScale(this.rsiScale);
+    var rsiAxis = d3.axisLeft(this.rsiScale).ticks(3);
+    var rsiAnnotation = techan.plot.axisannotation().axis(rsiAxis).orient("left") 
+            .format(d3.format(',.2f')).translate([this.x(1), 0]);
+
 
     this.timeAnnotation = techan.plot.axisannotation().axis(this.xAxis).orient('bottom')
         .format(d3.timeFormat(this._date_format)).width(50)
@@ -135,6 +148,14 @@ class FinanceChart {
         .xAnnotation(this.timeAnnotation)
         .yAnnotation([this.ohlcAnnotation, this.volumeAnnotation])
         .on("move", this.move.bind(this));        
+
+    // this.rsiCrosshair = techan.plot.crosshair()
+    //     .xScale(this.timeAnnotation.axis().scale())
+    //     .yScale(this.rsiAnnotation.axis().scale())
+    //     .xAnnotation(this.timeAnnotation)
+    //     .yAnnotation([this.rsiAnnotation])
+    //     .verticalWireRange([0, this.innerHeight]);
+    
 
     this.svg = d3.select(this.parent).append("svg")
             .attr("width", this.width).attr("height", this.height);  

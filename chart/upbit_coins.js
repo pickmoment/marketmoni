@@ -20,10 +20,11 @@ function coin_list(limit) {
 function display_coins(codes) {
   var charts_refresh = [];
   for (var i = 0; i < codes.length; i++) {
-    // var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-one-third-desktop').node();
-    var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-half-desktop').node();
+    var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-one-third-desktop').node();
+    // var parent = d3.select('#chart_columns').append('div').attr('class', 'column is-half-desktop').node();
     var chart = new FinanceChart(parent);
     chart.click_link(`upbit_chart.html?code=${codes[i]}`);
+    chart.tick_count(100)
     charts_refresh.push(get_coin(codes[i], period_option, chart));
   }
   
@@ -36,6 +37,8 @@ function display_coins(codes) {
 }
 
 function get_coin(code, period, chart) {
+  var data_dict = {}
+
   chart.mapper({
     dateFormat: '%Y-%m-%dT%H:%M:%S%Z',
     date:'candleDateTimeKst', 
@@ -48,15 +51,40 @@ function get_coin(code, period, chart) {
   chart.symbol_text(code + ' ' + period);
   chart.data_callback(data_callback)
   
-  const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=200&code=CRIX.UPBIT.${code}`;
+  var count = 200
   return function() {
+    const url = `https://crix-api-endpoint.upbit.com/v1/crix/candles/${period}?count=${count}&code=CRIX.UPBIT.${code}`;
     d3.json(url, function(error, data) {
+      count = 2
       if (ema_options) {
         chart.ema_options(ema_options);
       }
-      chart.ohlc(data)
+      var f_data = filtered_data(data, data_dict) 
+      // console.log(f_data)
+      chart.ohlc(f_data)
       chart.draw();
     }); 
+  }
+
+  function filtered_data(data, data_dict) {
+    var result = []
+    for (var i = 0; i < data.length; i++) {
+      data_dict[data[i].candleDateTimeKst] = data[i]
+    }
+    var keys = Object.keys(data_dict).sort((a, b) => {
+      if (b > a) return 1
+      else if (b < a) return -1
+      else return 0
+    })
+    for (i = 0; i < keys.length; i++) {
+      if (i < 500) {
+        result.push(data_dict[keys[i]])
+      } else {
+        delete data_dict[keys[i]]
+      }
+
+    }
+    return result
   }
 
 }
@@ -81,11 +109,12 @@ function data_callback(data) {
     // }
   }
 
-  console.log(size_2_ticks)
+  // console.log(size_2_ticks)
 
-  for (var i = 0; i < data.ohlc.length; i++) {
-    analyse(i, data.ohlc, data.ichimoku, low_peaks, high_peaks, size_2_ticks)
-  }  
+  // for (var i = 0; i < data.ohlc.length; i++) {
+    // var i = data.ohlc.length-1
+    // analyse(i, data.ohlc, data.ichimoku, low_peaks, high_peaks, size_2_ticks, data)
+  // }  
   // analyse(data.ohlc.length -1, data.ohlc, low_peaks, high_peaks, size_2_ticks)
 
   // console.log('Low Peaks:', low_peaks)
@@ -109,7 +138,7 @@ function is_in(curr, ticks) {
   }
 }
 
-function analyse(index, ohlc, ichimoku, low_peaks, high_peaks, size_2_ticks) {
+function analyse(index, ohlc, ichimoku, low_peaks, high_peaks, size_2_ticks, data) {
   const range = 3
   const i = index
 
@@ -164,8 +193,8 @@ function analyse(index, ohlc, ichimoku, low_peaks, high_peaks, size_2_ticks) {
     }
   }
 
-  if (anals.length > 0) {
-    console.log(curr, anals)
+  if (anals.length > 0 && anals.includes('기준점')) {
+    console.log(data.symbol, curr, anals)
   }
 }
 
@@ -215,20 +244,20 @@ function findGetParameter(parameterName) {
 }  
 
 var ema = findGetParameter('ema');
-var ema_options = [10,30,90];
+var ema_options = [20,60,112,224];
 if (ema) {
   ema_options = ema.split(',').map(Number);
   console.log('ema', ema)
 }
 
 var period = findGetParameter('period');
-var period_option = 'minutes/5';
+var period_option = 'minutes/10';
 if (period) {
   period_option = period;
 }
 
 var refresh = findGetParameter('refresh');
-var refresh_option = 500;
+var refresh_option = 10;
 if (refresh) {
   refresh_option = refresh;
 }

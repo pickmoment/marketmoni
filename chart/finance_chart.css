@@ -25,11 +25,13 @@ path.candle.body {
 
 path.candle.up {
   fill: red;
+  fill-opacity: 0.8;
   stroke: red;
 }
 
 path.candle.down {
   fill: blue;
+  fill-opacity: 0.8;
   stroke: blue;
 }
 
@@ -103,11 +105,11 @@ path.volume {
 }
 
 .ichimoku path.kumo.up {
-  fill: blue;
+  fill: pink;
 }
 
 .ichimoku path.kumo.down {
-  fill: blue;
+  fill: skyblue;
 }
 
 .ichimoku path.senkouspana {
@@ -116,8 +118,8 @@ path.volume {
 }
 
 .ichimoku path.senkouspanb {
-  stroke: #FF0000;
-  opacity: 0.0;
+  stroke: darkmagenta;
+  /* opacity: 0.0; */
 }
 
 .bollinger {
